@@ -9,8 +9,8 @@ int main() {
         const VerticesInfo vertices_info = file::read_vertices_info(env, fs::path(PROJECT_ROOT_DIR) / "demandPointsInput.txt");
         const auto& dist = vertices_info.verticesDistances;
 
-        IloInt n = vertices_info.n;                       // Depots
-        IloInt m = vertices_info.m;                       // Demand Points
+        IloInt n = vertices_info.n;         // Depots
+        IloInt m = vertices_info.m;         // Demand Points
         IloInt u_count = 2;                 // UAVs
         IloInt num_nodes = n + m;           // Total nodes (5)
         IloNum M = 1000000.0;               // Big M
@@ -134,15 +134,9 @@ int main() {
             env.out() << "Min Distance: " << cplex.getObjValue() << endl;
         }
 
-        for (int u = 0; u < u_count; u++) {
-            for (int i = 0; i < num_nodes; i++) {
-                for (int j = 0; j < num_nodes; j++) {
-                    std::cout << cplex.getValue(x[u][i][j]) << " ";
-                }
-                std::cout << std::endl;
-            }
-            std::cout << std::endl;
-        }
+        const fs::path uav_path_output = fs::path(PROJECT_ROOT_DIR) / "uav_path.txt";
+        file::save_3d_con(cplex, uav_path_output, x, u_count, num_nodes, num_nodes);
+
     } catch (IloException &e) {
         cerr << "Error: " << e << endl;
     }

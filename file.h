@@ -67,7 +67,26 @@ namespace file {
             }
         }
 
-        vertices_info.verticesDistances = std::move(distMatrix);
+        vertices_info.verticesDistances = distMatrix;
         return vertices_info;
+    }
+
+    template<typename Con3D>
+    void save_3d_con(const IloCplex& cplex, const fs::path& output_file, const Con3D& con, int x, int y, int z) {
+        std::ofstream file(output_file);
+
+        if (!file.is_open()) {
+            std::cerr << "Unable to create a file: " + output_file.string();
+            return;
+        }
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                for (int k = 0; k < z; k++) {
+                    file << cplex.getValue(con[i][j][k]) << " ";
+                }
+                file << "\n";
+            }
+            file << "\n";
+        }
     }
 }
