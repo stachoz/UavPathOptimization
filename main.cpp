@@ -135,7 +135,7 @@ int main() {
         }
 
         const fs::path uav_path_output = fs::path(PROJECT_ROOT_DIR) / "uav_path.txt";
-        file::save_3d_con(cplex, uav_path_output, x, u_count, num_nodes, num_nodes);
+        file::save_uav_paths(cplex, uav_path_output, x, u_count, num_nodes, num_nodes);
 
     } catch (IloException &e) {
         cerr << "Error: " << e << endl;

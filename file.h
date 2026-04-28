@@ -72,13 +72,16 @@ namespace file {
     }
 
     template<typename Con3D>
-    void save_3d_con(const IloCplex& cplex, const fs::path& output_file, const Con3D& con, int x, int y, int z) {
+    void save_uav_paths(const IloCplex& cplex, const fs::path& output_file, const Con3D& con, int x, int y, int z) {
         std::ofstream file(output_file);
 
         if (!file.is_open()) {
             std::cerr << "Unable to create a file: " + output_file.string();
             return;
         }
+
+        file << x << "\n";
+
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 for (int k = 0; k < z; k++) {
