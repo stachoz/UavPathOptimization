@@ -24,10 +24,12 @@ def plot_mds_from_file(filename):
                 return
 
         mds = MDS(n_components=2,
-                  metric=True,
+                  metric_mds=True,
                   n_init=4,
                   init='random',
-                  random_state=42)
+                  random_state=42,
+                  metric="precomputed"
+                  )
         coords = mds.fit_transform(dist_matrix)
 
         depots = coords[:n]
