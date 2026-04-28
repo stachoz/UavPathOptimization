@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(uavPathOptimization LANGUAGES CXX)
+project(UavPathOptimization LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -83,6 +83,15 @@ elseif(UNIX)
 endif()
 
 
-add_executable(blendCPLEX main.cpp)
+add_executable(${PROJECT_NAME} main.cpp
+)
 
-target_link_libraries(blendCPLEX PRIVATE cplex_interface)
+target_sources(${PROJECT_NAME} PUBLIC
+        file.h
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE cplex_interface)
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+        PROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}"
+)

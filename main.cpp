@@ -1,24 +1,19 @@
-#include <ilcplex/ilocplex.h>
 #include <iostream>
+#include "file.h"
 
 ILOSTLBEGIN
 
 int main() {
     IloEnv env;
     try {
-        IloInt n = 2;                       // Depots
-        IloInt m = 3;                       // Demand Points
-        IloInt u_count = 2;                 // UAVs
-        IloInt numNodes = n + m;            // Total nodes (5)
-        IloNum M = 1000000.0;               // Big M
+        const VerticesInfo vertices_info = file::read_vertices_info(env, fs::path(PROJECT_ROOT_DIR) / "demandPointsInput.txt");
+        const auto& dist = vertices_info.verticesDistances;
 
-        // Distance Matrix
-        IloArray<IloNumArray> dist(env, numNodes);
-        dist[0] = IloNumArray(env, 5, 0.0, 10.0, 15.0, 20.0, 25.0);
-        dist[1] = IloNumArray(env, 5, 10.0, 0.0, 12.0, 18.0, 22.0);
-        dist[2] = IloNumArray(env, 5, 15.0, 12.0, 0.0, 5.0, 8.0);
-        dist[3] = IloNumArray(env, 5, 20.0, 18.0, 5.0, 0.0, 6.0);
-        dist[4] = IloNumArray(env, 5, 25.0, 22.0, 8.0, 6.0, 0.0);
+        IloInt n = vertices_info.n;                       // Depots
+        IloInt m = vertices_info.m;                       // Demand Points
+        IloInt u_count = 2;                 // UAVs
+        IloInt num_nodes = n + m;           // Total nodes (5)
+        IloNum M = 1000000.0;               // Big M
 
         IloNum power_max = 6000;
         IloNum power_rate = 2;
@@ -40,9 +35,9 @@ int main() {
         typedef IloArray<IloBoolVarArray> BoolVarMatrix;
         IloArray<BoolVarMatrix> x(env, u_count);
         for (int u = 0; u < u_count; u++) {
-            x[u] = BoolVarMatrix(env, numNodes);
-            for (int i = 0; i < numNodes; i++) {
-                x[u][i] = IloBoolVarArray(env, numNodes);
+            x[u] = BoolVarMatrix(env, num_nodes);
+            for (int i = 0; i < num_nodes; i++) {
+                x[u][i] = IloBoolVarArray(env, num_nodes);
             }
         }
 
@@ -53,17 +48,17 @@ int main() {
         IloArray<IloNumVarArray> t(env, u_count);
 
         for (int u = 0; u < u_count; u++) {
-            e[u] = IloNumVarArray(env, numNodes, 0, power_max);
-            w[u] = IloNumVarArray(env, numNodes, 0, max_load);
-            v[u] = IloNumVarArray(env, numNodes, 0, max_volume);
-            t[u] = IloNumVarArray(env, numNodes, 0, IloInfinity);
+            e[u] = IloNumVarArray(env, num_nodes, 0, power_max);
+            w[u] = IloNumVarArray(env, num_nodes, 0, max_load);
+            v[u] = IloNumVarArray(env, num_nodes, 0, max_volume);
+            t[u] = IloNumVarArray(env, num_nodes, 0, IloInfinity);
         }
 
         // Objective
         IloExpr objExpr(env);
         for (int u = 0; u < u_count; u++) {
-            for (int i = 0; i < numNodes; i++) {
-                for (int j = 0; j < numNodes; j++) {
+            for (int i = 0; i < num_nodes; i++) {
+                for (int j = 0; j < num_nodes; j++) {
                     objExpr += dist[i][j] * x[u][i][j];
                 }
             }
@@ -78,19 +73,19 @@ int main() {
                 model.add(e[u][i] == power_max);
 
         // Every demand point (n to n+m-1) served exactly once
-        for (int j = n; j < numNodes; j++) {
+        for (int j = n; j < num_nodes; j++) {
             IloExpr demandCover(env);
             for (int u = 0; u < u_count; u++)
-                for (int i = 0; i < numNodes; i++)
+                for (int i = 0; i < num_nodes; i++)
                     demandCover += x[u][i][j];
             model.add(demandCover == 1);
         }
 
         // Flow conservation
         for (int u = 0; u < u_count; u++) {
-            for (int j = n; j < numNodes; j++) {
+            for (int j = n; j < num_nodes; j++) {
                 IloExpr inflow(env), outflow(env);
-                for (int i = 0; i < numNodes; i++) {
+                for (int i = 0; i < num_nodes; i++) {
                     inflow += x[u][i][j];
                     outflow += x[u][j][i];
                 }
@@ -100,8 +95,8 @@ int main() {
 
         // Energy constraints (Eq 5 & 6)
         for (int u = 0; u < u_count; u++) {
-            for (int i = 0; i < numNodes; i++) {
-                for (int j = 0; j < numNodes; j++) {
+            for (int i = 0; i < num_nodes; i++) {
+                for (int j = 0; j < num_nodes; j++) {
                     IloNum weight_i = (i >= n) ? weight[i - n] : 1.0;
                     model.add(e[u][i] - (power_rate * weight_i * dist[i][j]) <= e[u][j] + M * (1 - x[u][i][j]));
                 }
@@ -110,8 +105,8 @@ int main() {
 
         // Load and Volume constraints (Eq 7-10)
         for (int u = 0; u < u_count; u++) {
-            for (int i = 0; i < numNodes; i++) {
-                for (int j = n; j < numNodes; j++) {
+            for (int i = 0; i < num_nodes; i++) {
+                for (int j = n; j < num_nodes; j++) {
                     model.add(w[u][i] - weight[j - n] <= w[u][j] + M * (1 - x[u][i][j]));
                     // Volume logic would follow a similar pattern if tracking decreases
                 }
@@ -120,13 +115,13 @@ int main() {
 
         // Time Windows (Eq 11 & 12)
         for (int u = 0; u < u_count; u++) {
-            for (int i = 0; i < numNodes; i++) {
-                for (int j = 0; j < numNodes; j++) {
+            for (int i = 0; i < num_nodes; i++) {
+                for (int j = 0; j < num_nodes; j++) {
                     model.add(
                         t[u][i] + (dist[i][j] / speed + service_time) * x[u][i][j] <= t[u][j] + M * (1 - x[u][i][j]));
                 }
             }
-            for (int i = n; i < numNodes; i++) {
+            for (int i = n; i < num_nodes; i++) {
                 model.add(t[u][i] >= time_start[i - n]);
                 model.add(t[u][i] <= time_end[i - n]);
             }
@@ -139,10 +134,9 @@ int main() {
             env.out() << "Min Distance: " << cplex.getObjValue() << endl;
         }
 
-
         for (int u = 0; u < u_count; u++) {
-            for (int i = 0; i < numNodes; i++) {
-                for (int j = 0; j < numNodes; j++) {
+            for (int i = 0; i < num_nodes; i++) {
+                for (int j = 0; j < num_nodes; j++) {
                     std::cout << cplex.getValue(x[u][i][j]) << " ";
                 }
                 std::cout << std::endl;
