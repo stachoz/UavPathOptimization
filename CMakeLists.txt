@@ -77,17 +77,29 @@ elseif(UNIX)
             "${CPLEX_LIB_DIR}/libcplex.a"
             "${CPLEX_LIB_DIR}/libilocplex.a"
             "${CONCERT_LIB_DIR}/libconcert.a"
-            Threads::Threads # Link against pthreads
+            Threads::Threads
     )
     target_link_libraries(cplex_interface INTERFACE -ldl -lm)
 endif()
 
+# ====================================================================
+# Executable configuration
+# ====================================================================
 
-add_executable(${PROJECT_NAME} main.cpp
-)
+# Specify that all source files for this target are located in the src/cpp directory.
+# We do this using target_sources and specifying paths relative to CMakeLists.txt
+add_executable(${PROJECT_NAME} src/cpp/main.cpp)
+
+# This tells the compiler where to look for #include files.
+target_include_directories(${PROJECT_NAME} PRIVATE src/cpp)
 
 target_sources(${PROJECT_NAME} PUBLIC
-        file.h
+        src/cpp/file.h
+        src/cpp/UavPathOptimizationLogic.h
+        src/cpp/UavPathOptimizationLogic.cpp
+        src/cpp/parser/IDataParser.h
+        src/cpp/parser/DistancesParser.h
+        src/cpp/CPlexManager.h
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE cplex_interface)

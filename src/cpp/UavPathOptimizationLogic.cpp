@@ -1,12 +1,8 @@
-#include <iostream>
-#include "file.h"
+#include "UavPathOptimizationLogic.h"
 
-ILOSTLBEGIN
-
-int main() {
-    IloEnv env;
+void UavPathOptimizationLogic::run_solver(const VerticesInfo &vertices_info) {
     try {
-        const VerticesInfo vertices_info = file::read_vertices_info(env, fs::path(PROJECT_ROOT_DIR) / "demandPointsInput.txt");
+        const auto& env = CplexManager::getInstance().getEnv();
         const auto& dist = vertices_info.verticesDistances;
 
         IloInt n = vertices_info.n;         // Depots
@@ -127,19 +123,16 @@ int main() {
             }
         }
 
-        // Solve
         IloCplex cplex(model);
         if (cplex.solve()) {
-            env.out() << "Status: " << cplex.getStatus() << endl;
-            env.out() << "Min Distance: " << cplex.getObjValue() << endl;
+            env.out() << "Status: " << cplex.getStatus() << std::endl;
+            env.out() << "Min Distance: " << cplex.getObjValue() << std::endl;
         }
 
         const fs::path uav_path_output = fs::path(PROJECT_ROOT_DIR) / "uav_path.txt";
         file::save_uav_paths(cplex, uav_path_output, x, u_count, num_nodes, num_nodes);
 
     } catch (IloException &e) {
-        cerr << "Error: " << e << endl;
+        std::cerr << "Error: " << e << std::endl;
     }
-    env.end();
-    return 0;
 }

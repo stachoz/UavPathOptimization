@@ -116,7 +116,7 @@ def plot_mds_from_file(filename, path_filename):
         plt.legend()
         plt.grid(True, linestyle='--', alpha=0.6, zorder=0)
 
-        output_filename = "mds_plot.png"
+        output_filename = "../../mds_plot.png"
         plt.savefig(output_filename, dpi=300)
         print(f"Plot successfully saved to {output_filename}")
 
@@ -124,4 +124,4 @@ def plot_mds_from_file(filename, path_filename):
         print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
-    plot_mds_from_file('demandPointsInput.txt', 'uav_path.txt')
+    plot_mds_from_file('../../test-data/demandPointsInput.txt', 'uav_path.txt')

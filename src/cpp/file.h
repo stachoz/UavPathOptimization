@@ -27,50 +27,6 @@ namespace file {
         return value;
     }
 
-    inline VerticesInfo read_vertices_info(IloEnv env, const fs::path &filename) {
-        VerticesInfo vertices_info;
-        std::ifstream file(filename);
-        std::string line;
-
-        std::getline(file, line);
-        vertices_info.n = parse_line_int(line);
-
-        std::getline(file, line);
-        vertices_info.m = parse_line_int(line);
-
-        IloArray<IloNumArray> distMatrix(env);
-
-        while (std::getline(file, line)) {
-            if (line.empty()) continue;
-
-            IloNumArray row(env);
-            const char *ptr = line.data();
-            const char *end = line.data() + line.size();
-
-            while (ptr < end) {
-                while (ptr < end && std::isspace(*ptr)) ptr++;
-                if (ptr == end) break;
-
-                double val;
-                auto [next_ptr, ec] = std::from_chars(ptr, end, val);
-                if (ec == std::errc()) {
-                    row.add(val);
-                    ptr = next_ptr;
-                }
-                else {
-                    break;
-                }
-            }
-
-            if (row.getSize() > 0) {
-                distMatrix.add(row);
-            }
-        }
-
-        vertices_info.verticesDistances = distMatrix;
-        return vertices_info;
-    }
-
     template<typename Con3D>
     void save_uav_paths(const IloCplex& cplex, const fs::path& output_file, const Con3D& con, int x, int y, int z) {
         std::ofstream file(output_file);
