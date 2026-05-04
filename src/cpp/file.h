@@ -6,12 +6,18 @@
 #include <fstream>
 #include <string>
 
+#include "CPlexManager.h"
+
 namespace fs = std::filesystem;
 
 struct VerticesInfo {
     int n; // depots
     int m; // demand points
     IloArray<IloNumArray> vertices_distances;
+    IloNumArray weights{CplexManager::getInstance().getEnv()};
+    IloNumArray volume{CplexManager::getInstance().getEnv()};
+    IloNumArray time_start{CplexManager::getInstance().getEnv()};
+    IloNumArray time_end{CplexManager::getInstance().getEnv()};
 };
 
 namespace file {

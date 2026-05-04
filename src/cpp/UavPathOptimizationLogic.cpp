@@ -7,14 +7,14 @@ void UavPathOptimizationLogic::run_solver(const VerticesInfo &vertices_info) con
 
         IloInt n = vertices_info.n;         // Depots
         IloInt m = vertices_info.m;         // Demand Points
-        IloInt u_count = 2;                 // UAVs
         IloInt num_nodes = n + m;           // Total nodes (5)
+        IloInt u_count = 5;                 // UAVs
 
         // Demand point data (weight, volume, time windows)
-        IloNumArray weight(env, m, 1.2, 0.8, 2.5);
-        IloNumArray volume(env, m, 2.0, 1.5, 4.0);
-        IloNumArray time_start(env, m, 0.0, 100.0, 200.0);
-        IloNumArray time_end(env, m, 500.0, 600.0, 800.0);
+        IloNumArray weight = vertices_info.weights;
+        IloNumArray volume= vertices_info.volume;
+        IloNumArray time_start = vertices_info.time_start;
+        IloNumArray time_end = vertices_info.time_end;
 
         IloModel model(env);
 
@@ -124,6 +124,9 @@ void UavPathOptimizationLogic::run_solver(const VerticesInfo &vertices_info) con
         }
 
         IloCplex cplex(model);
+        cplex.setParam(IloCplex::Param::TimeLimit, 300);
+        cplex.setParam(IloCplex::Param::MIP::Tolerances::RelObjDifference, 0.05);
+
         if (cplex.solve()) {
             env.out() << "Status: " << cplex.getStatus() << std::endl;
             env.out() << "Min Distance: " << cplex.getObjValue() << std::endl;

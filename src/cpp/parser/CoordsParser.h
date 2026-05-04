@@ -21,8 +21,10 @@ public:
         }
 
         std::vector<std::pair<double, double>> coords {};
-
         std::string line;
+
+        std::getline(file, line); // skip header
+
         while (std::getline(file, line)) {
             if (line.find_first_not_of(" \t\r\n") == std::string::npos) {
                 continue;
@@ -31,26 +33,14 @@ public:
             const char *ptr = line.data();
             const char *end = line.data() + line.size();
 
-            double x;
-            auto [ptr_after_x, ec_x] = std::from_chars(ptr, end, x);
-            if (ec_x != std::errc()) {
-                throw std::runtime_error("Failed to parse X coordinate in file: " + data_path.string());
-            }
-            ptr = skip_to_next(ptr_after_x, end);
+            double x = parse_double(data_path, ptr, end);
+            double y = parse_double(data_path, ptr, end);
 
-            double y;
-            auto [ptr_after_y, ec_y] = std::from_chars(ptr, end, y);
-            if (ec_y != std::errc()) {
-                throw std::runtime_error("Failed to parse Y coordinate in file: " + data_path.string());
-            }
 
-            ptr = skip_to_next(ptr_after_y, end);
+            const char* str_begin_ptr = ptr;
+            ptr = skip_to_next(ptr, end);
 
-            if (ptr == end) {
-                 throw std::runtime_error("Missing type information in file: " + data_path.string());
-            }
-
-            std::string_view type_str(ptr, end - ptr);
+            std::string_view type_str(str_begin_ptr, ptr - str_begin_ptr - 1); // -1 to remove separator
             VertexType type = vertex_type_from_string(type_str);
 
             if (type == VertexType::UNKNOWN) {
@@ -61,6 +51,10 @@ public:
             }
             if (type == VertexType::DEMAND_POINT) {
                 ++vertices_info.m;
+                vertices_info.weights.add(parse_double(data_path, ptr, end));
+                vertices_info.volume.add(parse_double(data_path, ptr, end));
+                vertices_info.time_start.add(parse_double(data_path, ptr, end));
+                vertices_info.time_end.add(parse_double(data_path, ptr, end));
             }
 
             coords.emplace_back(x, y);
@@ -71,6 +65,18 @@ public:
     }
 
 private:
+    double parse_double(const std::filesystem::path &data_path, const char *&ptr, const char *end) {
+        double x = 0;
+
+        auto [ptr_after_x, ec_x] = std::from_chars(ptr, end, x);
+        if (ec_x != std::errc()) {
+            throw std::runtime_error("Failed to parse X coordinate in file: " + data_path.string());
+        }
+        ptr = skip_to_next(ptr_after_x, end);
+
+        return x;
+    }
+
     static IloArray<IloNumArray> distances_from_coords(const std::vector<std::pair<double, double>>& coords) {
         const auto& env = CplexManager::getInstance().getEnv();
         size_t n = coords.size();
@@ -86,10 +92,7 @@ private:
                 const auto d = distance(coords[i], coords[j]);
                 dist_matrix[i][j] = d;
                 dist_matrix[j][i] = d;
-
-                std::cout << d << " ";
             }
-            std::cout << "\n";
         }
 
         return dist_matrix;
