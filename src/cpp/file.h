@@ -11,7 +11,7 @@ namespace fs = std::filesystem;
 struct VerticesInfo {
     int n; // depots
     int m; // demand points
-    IloArray<IloNumArray> verticesDistances;
+    IloArray<IloNumArray> vertices_distances;
 };
 
 namespace file {

@@ -99,6 +99,7 @@ target_sources(${PROJECT_NAME} PUBLIC
         src/cpp/UavPathOptimizationLogic.cpp
         src/cpp/parser/IDataParser.h
         src/cpp/parser/DistancesParser.h
+        src/cpp/parser/CoordsParser.h
         src/cpp/CPlexManager.h
 )
 

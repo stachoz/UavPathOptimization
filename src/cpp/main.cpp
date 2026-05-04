@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
         std::cout << file_path << std::endl;
         std::cout << data_type << std::endl;
 
-        const auto logic = std::make_unique<UavPathOptimizationLogic>(file_path, from_string(data_type));
+        const auto logic = std::make_unique<UavPathOptimizationLogic>(file_path, depot_type_form_string(data_type));
         logic->run();
     }
 

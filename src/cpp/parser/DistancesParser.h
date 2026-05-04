@@ -1,4 +1,5 @@
 #pragma once
+
 #include "CPlexManager.h"
 #include "IDataParser.h"
 
@@ -23,10 +24,12 @@ public:
         vertices_info.m = file::parse_line_int(line);
 
         const auto& iloEnv = CplexManager::getInstance().getEnv();
-        IloArray<IloNumArray> distMatrix(iloEnv);
+        IloArray<IloNumArray> dist_matrix(iloEnv);
 
         while (std::getline(file, line)) {
-            if (line.empty()) continue;
+            if (line.find_first_not_of(" \t\r\n") == std::string::npos) {
+                continue;
+            }
 
             IloNumArray row(iloEnv);
             const char *ptr = line.data();
@@ -48,11 +51,11 @@ public:
             }
 
             if (row.getSize() > 0) {
-                distMatrix.add(row);
+                dist_matrix.add(row);
             }
         }
 
-        vertices_info.verticesDistances = distMatrix;
+        vertices_info.vertices_distances = dist_matrix;
         return vertices_info;
     }
 };

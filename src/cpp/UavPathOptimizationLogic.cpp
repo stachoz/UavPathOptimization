@@ -1,22 +1,15 @@
 #include "UavPathOptimizationLogic.h"
 
-void UavPathOptimizationLogic::run_solver(const VerticesInfo &vertices_info) {
+void UavPathOptimizationLogic::run_solver(const VerticesInfo &vertices_info) const {
     try {
         const auto& env = CplexManager::getInstance().getEnv();
-        const auto& dist = vertices_info.verticesDistances;
+        const auto& dist = vertices_info.vertices_distances;
 
         IloInt n = vertices_info.n;         // Depots
         IloInt m = vertices_info.m;         // Demand Points
         IloInt u_count = 2;                 // UAVs
         IloInt num_nodes = n + m;           // Total nodes (5)
-        IloNum M = 1000000.0;               // Big M
 
-        IloNum power_max = 6000;
-        IloNum power_rate = 2;
-        IloNum max_load = 5;
-        IloNum max_volume = 10;
-        IloNum speed = 5;
-        IloNum service_time = 60;
 
         // Demand point data (weight, volume, time windows)
         IloNumArray weight(env, m, 1.2, 0.8, 2.5);
