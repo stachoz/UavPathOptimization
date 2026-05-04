@@ -10,7 +10,6 @@ void UavPathOptimizationLogic::run_solver(const VerticesInfo &vertices_info) con
         IloInt u_count = 2;                 // UAVs
         IloInt num_nodes = n + m;           // Total nodes (5)
 
-
         // Demand point data (weight, volume, time windows)
         IloNumArray weight(env, m, 1.2, 0.8, 2.5);
         IloNumArray volume(env, m, 2.0, 1.5, 4.0);
@@ -97,8 +96,16 @@ void UavPathOptimizationLogic::run_solver(const VerticesInfo &vertices_info) con
             for (int i = 0; i < num_nodes; i++) {
                 for (int j = n; j < num_nodes; j++) {
                     model.add(w[u][i] - weight[j - n] <= w[u][j] + M * (1 - x[u][i][j]));
-                    // Volume logic would follow a similar pattern if tracking decreases
+                    model.add(v[u][i] - volume[j-n] <= v[u][j] + M * (1 - x[u][i][j]));
                 }
+            }
+        }
+
+        // initial volume is set to max
+        for(int u = 0; u < u_count; u++) {
+            for(int i = 0; i < n; i++) {
+                model.add(v[u][i] == max_volume);
+                model.add(w[u][i] == max_load);
             }
         }
 
