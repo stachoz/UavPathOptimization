@@ -12,6 +12,7 @@ public:
     UavPathOptimizationLogic(fs::path filename, DataType data_type) : filename(std::move(filename)) {
         switch (data_type) {
             case DataType::DIST:
+                // TODO remove
                 data_parser = std::make_unique<DistancesParser>();
                 break;
             case DataType::COORDS:
