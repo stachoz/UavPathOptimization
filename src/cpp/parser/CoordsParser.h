@@ -51,12 +51,11 @@ public:
             }
             if (type == VertexType::DEMAND_POINT) {
                 ++vertices_info.m;
-                vertices_info.weights.add(parse_double(data_path, ptr, end));
-                vertices_info.volume.add(parse_double(data_path, ptr, end));
-                vertices_info.time_start.add(parse_double(data_path, ptr, end));
-                vertices_info.time_end.add(parse_double(data_path, ptr, end));
             }
-
+            vertices_info.weights.add(parse_double(data_path, ptr, end));
+            vertices_info.volume.add(parse_double(data_path, ptr, end));
+            vertices_info.time_start.add(parse_double(data_path, ptr, end));
+            vertices_info.time_end.add(parse_double(data_path, ptr, end));
             coords.emplace_back(x, y);
         }
 
